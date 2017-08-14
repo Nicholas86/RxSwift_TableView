@@ -1,0 +1,173 @@
+//
+//  TestViewController.swift
+//  TaskElephant
+//
+//  Created by apple on 17/4/13.
+//  Copyright © 2017年 xiangguohe. All rights reserved.
+//
+
+import UIKit
+
+#if !RX_NO_MODULE
+    import RxSwift
+    import RxCocoa
+    import RxDataSources
+#endif
+import MJRefresh
+
+class TestViewController: UIViewController {
+    
+    var disposeBag = DisposeBag()
+    
+    @IBOutlet var tableView: UITableView!
+
+    lazy var coachViewModel: CoachViewModel = {
+        let coachViewModel = CoachViewModel()
+        return coachViewModel
+    }()
+    
+    var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, CoachModel>>()
+    
+    var dataArr = Variable([SectionModel<String, CoachModel>]())
+
+    var page = 1
+   
+    var header = MJRefreshNormalHeader()
+
+    var footer = MJRefreshAutoNormalFooter()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Do any additional setup after loading the view.
+        
+        if IOS7 {
+            self.edgesForExtendedLayout = .top
+        }
+        
+        view.backgroundColor = whiteColor
+        self.automaticallyAdjustsScrollViewInsets = false
+        
+        rx_requestAllViewControllerData()
+        rx_setupRxDataSourcesForTestViewController()
+        rx_addMoreAndRefresh()
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+}
+
+extension TestViewController{
+    
+    func rx_requestAllViewControllerData() -> Void {
+        
+        if page == 1 {
+           self.dataArr.value.removeAll()
+        }
+        let parameterDic = [
+            "page":page,
+            "pageSize":"10",
+            "sportId":"",
+            ] as [String : Any]
+        /*
+        coachViewModel.request(RequestType.requestTypePOST, urlstring: getCoachListBySportIdUrl, paramete: parameterDic as [String : AnyObject])
+            .bindTo(tableView.rx.items(dataSource: dataSource))
+            .addDisposableTo(disposeBag)
+         */
+        weak var weakSelf = self
+        coachViewModel.request(RequestType.requestTypePOST, urlstring: getCoachListBySportIdUrl, paramete: parameterDic as [String : AnyObject])
+            .subscribe(onNext: { (section : [SectionModel<String, CoachModel>]) in
+                weakSelf?.dataArr.value += section
+            })
+            .addDisposableTo(disposeBag)
+        
+    }
+    
+}
+
+extension TestViewController : UITableViewDelegate{
+    
+    func rx_setupRxDataSourcesForTestViewController() -> Void {
+        
+        self.tableView.hideTableFooterView()
+        
+        dataSource.configureCell = {
+            _, tableView, indexPath, coachModel in
+            
+            let cell = tableView.dequeueReusableCell(withIdentifier: "testTableViewCell", for: indexPath) as! TestTableViewCell
+            cell.tag = indexPath.row
+            cell.cellForCoachModel(model: coachModel)
+            
+            return cell
+            
+        }
+
+        //绑定数据
+        dataArr
+            .asObservable()
+            .bindTo(tableView.rx.items(dataSource: dataSource))
+            .addDisposableTo(disposeBag)
+        
+        
+        tableView.rx
+                 .setDelegate(self)
+                 .addDisposableTo(disposeBag)
+        
+        
+        tableView.rx.itemSelected
+            .map { [weak self] indexPath in
+                return (indexPath, self?.dataSource[indexPath])
+            }
+            .subscribe(onNext: {(indexPath, item) in
+                //self.showAlter(item: item)
+            })
+            .addDisposableTo(disposeBag)
+        
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 60
+    }
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        view.endEditing(true)
+    }
+    
+}
+
+//MARK:上拉加载,下拉刷新
+extension TestViewController {
+    
+    //添加上拉加载下拉刷新
+    func rx_addMoreAndRefresh(){
+        //下拉刷新
+        header.setRefreshingTarget(self, refreshingAction:#selector(TestViewController.headerRefresh))
+        self.tableView.mj_header = header;
+        //上拉加载
+        footer.setRefreshingTarget(self, refreshingAction: #selector(TestViewController.footerLoadMore))
+        self.tableView.mj_footer = footer;
+    }
+    
+    //下拉刷新
+    func headerRefresh()  {
+        page = 1 //赋值为1  不是page == 1
+        rx_requestAllViewControllerData()
+        //结束刷新
+        self.tableView.mj_header.endRefreshing()
+    }
+    
+    //上拉加载
+    func footerLoadMore() {
+        page += 1
+        rx_requestAllViewControllerData()
+        //结束加载
+        self.tableView.mj_footer.endRefreshing()
+    }
+    
+}
+
+
+

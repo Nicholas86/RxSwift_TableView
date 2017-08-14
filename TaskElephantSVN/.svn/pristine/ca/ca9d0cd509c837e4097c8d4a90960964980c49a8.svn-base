@@ -1,0 +1,38 @@
+//
+//  LoginModel.swift
+//  TaskElephant
+//
+//  Created by apple on 17/4/11.
+//  Copyright © 2017年 xiangguohe. All rights reserved.
+//
+
+import UIKit
+
+class LoginModel: NSObject {
+    //account
+    var  account : Int = 0
+    //id
+    var  id : Int = 0
+    //nickName
+    var nickName : String?
+    //realName
+    var realName : String?
+    //sex
+    var sex : Int = 0
+    //headRealPath
+    var headRealPath : String?
+    //birthday
+    var birthday : String?
+    
+    //初始化方法
+    init(paraDic:NSDictionary) {
+        super.init() //1.须在KVC方法前调用,完成对象初始化
+        //2.swift不支持基本上数据类型,应该在kvc前,给变量赋初始值,切不可以为nil
+        setValuesForKeys(paraDic as! [String : AnyObject])
+    }
+    //没有定义的,转换类型
+    override func setValue(_ value: Any?, forUndefinedKey key: String) {
+        //print(key)
+    }
+
+}

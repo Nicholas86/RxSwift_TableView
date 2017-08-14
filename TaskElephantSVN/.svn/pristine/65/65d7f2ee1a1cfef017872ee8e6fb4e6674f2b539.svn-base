@@ -1,0 +1,32 @@
+//
+//  ViewController.swift
+//  TaskElephant
+//
+//  Created by apple on 17/4/10.
+//  Copyright © 2017年 xiangguohe. All rights reserved.
+//
+
+import UIKit
+
+class ViewController: UIViewController {
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Do any additional setup after loading the view, typically from a nib.
+        if IOS7 {
+            self.edgesForExtendedLayout = .top
+        }
+        
+        view.backgroundColor = whiteColor
+        self.automaticallyAdjustsScrollViewInsets = false
+
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+
+
+}
+

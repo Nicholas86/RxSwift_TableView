@@ -1,0 +1,74 @@
+//
+//  TestViewController.swift
+//  TaskElephant
+//
+//  Created by apple on 17/4/13.
+//  Copyright © 2017年 xiangguohe. All rights reserved.
+//
+
+import UIKit
+
+#if !RX_NO_MODULE
+    import RxSwift
+    import RxCocoa
+    import RxDataSources
+#endif
+
+class TestViewController: UIViewController ,UITableViewDelegate{
+    
+    var disposeBag = DisposeBag()
+    @IBOutlet var tableView: UITableView!
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Do any additional setup after loading the view.
+        
+        if IOS7 {
+            self.edgesForExtendedLayout = .top
+        }
+        
+        view.backgroundColor = whiteColor
+        self.automaticallyAdjustsScrollViewInsets = false
+        
+        self.tableView.hideTableFooterView()
+        self.tableView.hideTableHeaderView()
+        
+        //数组
+        let items = Observable.just((0..<20)
+            .map ({"\($0)"}) //转成字符串
+        )
+        
+        items
+            .bindTo(tableView.rx.items(cellIdentifier: "testTableViewCell", cellType: TestTableViewCell.self)) {
+                (row,eletment,cell) in
+                cell.textLabel?.text = "\(eletment) row - \(row)"
+            }
+            .addDisposableTo(disposeBag)
+        
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+
+    /*
+    // MARK: - Navigation
+
+    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destinationViewController.
+        // Pass the selected object to the new view controller.
+    }
+    */
+
+}
+
+
+
+
+
+
+

@@ -1,0 +1,233 @@
+//
+//  XGHHTTPNetworkingTool.swift
+//  SportsProduct
+//
+//  Created by apple on 16/10/9.
+//  Copyright © 2016年 xiangguohe. All rights reserved.
+//
+
+import UIKit
+import SystemConfiguration   //系统配置
+import SwiftyJSON //json类
+import Alamofire
+/// 1.创建请求类枚举
+enum RequestType: Int {
+    case requestTypeGET
+    case requestTypePOST
+    case requestTypeDelegate
+}
+
+//关于网络检测枚举
+let ReachabilityStatusChangedNotification = "ReachabilityStatusChangedNotification"
+
+enum ReachabilityType: CustomStringConvertible {
+    case wwan
+    case wiFi
+    
+    var description: String {
+        switch self {
+        case .wwan: return "WWAN"
+        case .wiFi: return "WiFi"
+        }
+    }
+}
+
+enum ReachabilityStatus: CustomStringConvertible  {
+    case offline
+    case online(ReachabilityType)
+    case unknown
+    
+    var description: String {
+        switch self {
+        case .offline: return "Offline"
+        case .online(let type): return "Online (\(type))"
+        case .unknown: return "Unknown"
+        }
+    }
+}
+
+/// 2.block回调函数
+typealias SuccessBlock = ([String : AnyObject])->Void//成功回调
+typealias FailueBlock = (NSError)->Void//失败回调
+typealias uploadClosure = (AnyObject?, NSError?,Int64?,Int64?,Int64?)->Void
+class XGHHTTPNetworkingTool: NSObject {
+    
+    //1.创建单例
+    static let shareXGHHTTPNetworkingTool = XGHHTTPNetworkingTool()
+    //私有化初始化
+    fileprivate override init() {
+        
+     }
+    
+    /**
+     封装Alamofire
+     - author: tangweijie
+     - date: 16-10-09 14:10:05
+     - parameter type:      请求类型 GET,POST,Delegate
+     - parameter UrlString: 网址
+     - parameter Parameter: 参数
+     - parameter successBlock: 成功回调
+     */
+    
+    func request(_ type:RequestType,UrlString : String,Parameter : [String : AnyObject],successBlock : @escaping SuccessBlock,failueBlock : @escaping FailueBlock) -> URLSessionTask {
+        
+        if type == .requestTypeGET { //1.GET
+            let dataRequest : DataRequest = Alamofire.request(UrlString, method: .get, parameters: Parameter).responseJSON(completionHandler: { (response) in
+                    if response.result.isSuccess {
+                        /*
+                        if let result = response.result.value {//绑定
+                            //let swiftyJsonVar = JSON(result)
+                        }
+                       */
+                    }else{
+                        failueBlock(response.result.error as! NSError)//失败发送出去
+                    }
+                })
+            return dataRequest.task!
+        }else if type == .requestTypePOST {//2.POST
+            let dataRequest : DataRequest =  Alamofire.request(UrlString, method: .post, parameters: Parameter).responseJSON(completionHandler: { (response) in
+                        if response.result.isSuccess{
+                            if let result = response.result.value {
+                                let swiftyJsonVar = JSON(result)
+                                if let jsonObject: AnyObject = swiftyJsonVar.rawValue as AnyObject? {
+                                    //SVProgressHUD.showError(withStatus: "加载失败...")
+                                    successBlock(jsonObject as! [String : AnyObject])
+                                }
+                           }
+                        }else{
+//                            SVProgressHUD.showError(withStatus: "加载失败...")
+                            failueBlock(response.result.error as! NSError)//失败发送出去
+                        }
+                    })
+            return dataRequest.task!
+        }else{//3.DELEGATE
+            let dataRequest : DataRequest = Alamofire.request(UrlString, method: .delete, parameters: Parameter).responseJSON(completionHandler: { (response) in
+                
+            })
+            return dataRequest.task!
+        }
+        
+    }
+    //关于文件上传的方法
+    //fileURL实例:let fileURL = NSBundle.mainBundle().URLForResource("Default",withExtension: "png")
+//    func upload(_ type:RequestType,URLString:String,fileURL:URL,block:@escaping uploadClosure) {
+//        //检测网络是否存在的方法
+////        if (!self.checkConnect()) {
+////            return
+////        }
+//        Alamofire.upload(.POST, URLString, file: fileURL).progress {(bytesWritten, totalBytesWritten, totalBytesExpectedToWrite) -> Void in
+//            block(nil,nil,bytesWritten ,totalBytesWritten,totalBytesExpectedToWrite)
+//            }.responseJSON { response in
+//                block(response.result.value,response.result.error,nil,nil,nil)
+//        }
+//    }
+//    //关于文件下载的方法
+//    //下载到默认路径let destination = Alamofire.Request.suggestedDownloadDestination(directory: .DocumentDirectory, domain: .UserDomainMask)
+//    let destination = Alamofire.Request.suggestedDownloadDestination(directory: .documentDirectory, domain: .userDomainMask)
+//    //默认路径可以设置为空,因为有默认路径
+//    func download(_ type:RequestType,URLString:String,block:@escaping uploadClosure) {
+//        //检测网络是否存在的方法
+//        if (!self.checkConnect()) {
+//            return
+//        }
+//        switch type {
+//        case .requestTypeGET:
+//            Alamofire.download(.GET, URLString, destination: destination)
+//                .progress { (bytesRead, totalBytesRead, totalBytesExpectedToRead) in
+//                    block(nil,nil,bytesRead, totalBytesRead, totalBytesExpectedToRead)
+//                }
+//                .response { (request, response, _, error) in
+//                    block(response,error,nil,nil,nil)
+//            }
+//            break
+//        case .requestTypePOST:
+//            Alamofire.download(.POST, URLString, destination: destination)
+//                .progress { (bytesRead, totalBytesRead, totalBytesExpectedToRead) in
+//                    block(nil,nil,bytesRead, totalBytesRead, totalBytesExpectedToRead)
+//                }
+//                .response { (request, response, _, error) in
+//                    block(response,error,nil,nil,nil)
+//            }
+//        default:break
+//        }
+//    }
+//    
+    
+    /*
+    //检测网络
+    func checkConnect()->Bool {
+        let status = self.connectionStatus()
+        switch status{
+        case .unknown,.offline:
+            print("无网络")
+            return false
+        case .online(.wwan):
+            print("y有网络")
+            return true
+        case .online(.wiFi):
+            print("有wifi请链接")
+            return true
+        }
+    }
+ */
+    
+    /*
+    //下面是关于网络检测的方法
+    func connectionStatus() -> ReachabilityStatus {
+        var zeroAddress = sockaddr_in()
+        zeroAddress.sin_len = UInt8(MemoryLayout.size(ofValue: zeroAddress))
+        zeroAddress.sin_family = sa_family_t(AF_INET)
+        
+        guard let defaultRouteReachability = withUnsafePointer(to: &zeroAddress, {
+            SCNetworkReachabilityCreateWithAddress(nil, UnsafePointer($0))
+        }) else {
+            return .unknown
+        }
+        
+        var flags : SCNetworkReachabilityFlags = []
+        if !SCNetworkReachabilityGetFlags(defaultRouteReachability, &flags) {
+            return .unknown
+       }
+        return ReachabilityStatus(reachabilityFlags: flags)
+    }
+ */
+    
+//    
+//    
+//    func monitorReachabilityChanges() {
+//        let host = "google.com"
+//        var context = SCNetworkReachabilityContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
+//        let reachability = SCNetworkReachabilityCreateWithName(nil, host)!
+//        
+//        SCNetworkReachabilitySetCallback(reachability, { (_, flags, _) in
+//            let status = ReachabilityStatus(reachabilityFlags: flags)
+//            
+//            NotificationCenter.default.post(name: Notification.Name(rawValue: ReachabilityStatusChangedNotification),
+//                object: nil,
+//                userInfo: ["Status": status.description])
+//            
+//            }, &context)
+//        
+//        SCNetworkReachabilityScheduleWithRunLoop(reachability, CFRunLoopGetMain(), CFRunLoopMode.commonModes)
+//    }
+//  }
+//
+//  extension ReachabilityStatus {
+//      fileprivate init(reachabilityFlags flags: SCNetworkReachabilityFlags) {
+//         let connectionRequired = flags.contains(.connectionRequired)
+//         let isReachable = flags.contains(.reachable)
+//         let isWWAN = flags.contains(.isWWAN)
+//        
+//         if !connectionRequired && isReachable {
+//            if isWWAN {
+//                self = .online(.wwan)
+//            } else {
+//                self = .online(.wiFi)
+//            }
+//         } else {
+//            self =  .offline
+//         }
+//     }
+
+}
+

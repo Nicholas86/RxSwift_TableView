@@ -1,0 +1,149 @@
+//
+//  TestViewController.swift
+//  TaskElephant
+//
+//  Created by apple on 17/4/13.
+//  Copyright © 2017年 xiangguohe. All rights reserved.
+//
+
+import UIKit
+
+#if !RX_NO_MODULE
+    import RxSwift
+    import RxCocoa
+    import RxDataSources
+#endif
+
+class TestViewController: UIViewController {
+    
+    var disposeBag = DisposeBag()
+    
+    @IBOutlet var tableView: UITableView!
+
+    lazy var coachViewModel: CoachViewModel = {
+        let coachViewModel = CoachViewModel.init()
+        return coachViewModel
+    }()
+    
+    var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Double>>()
+
+    var page = 1
+    
+    /*
+    lazy var dataSource : Array <CoachModel> = {
+        var dataSource : Array<CoachModel>! = [] //初始化
+        return dataSource
+    }()
+   */
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Do any additional setup after loading the view.
+        
+        if IOS7 {
+            self.edgesForExtendedLayout = .top
+        }
+        
+        view.backgroundColor = whiteColor
+        self.automaticallyAdjustsScrollViewInsets = false
+        
+        requestAllViewControllerData()
+        setupRxDataSourcesForTestViewController()
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+
+    /*
+    // MARK: - Navigation
+
+    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destinationViewController.
+        // Pass the selected object to the new view controller.
+    }
+    */
+
+}
+
+extension TestViewController{
+    
+    func requestAllViewControllerData() -> Void {
+        
+        let parameterDic = [
+            "page":page,
+            "pageSize":"10",
+            "sportId":"",
+            ] as [String : Any]
+        
+        weak var weakSelf = self
+        /*
+        coachViewModel.request(RequestType.requestTypePOST, urlstring: getCoachListBySportIdUrl, paramete: parameterDic as [String : AnyObject])
+            .subscribe(onNext: { (dataArry) in
+                weakSelf!.dataSource += dataArry
+                DispatchQueue.main.async(execute: {
+                    //weakSelf!.tableView.reloadData()
+                })
+            }, onError: { (error) in
+                
+            }, onCompleted: {
+                
+                
+            }) {
+                
+            }
+            .addDisposableTo(disposeBag)
+        */
+        coachViewModel.request(RequestType.requestTypePOST, urlstring: getCoachListBySportIdUrl, paramete: parameterDic as [String : AnyObject])
+            //.bindTo(tableView.rx.items(dataSource: dataSource))
+            //.addDisposableTo(disposeBag)
+ 
+    }
+    
+}
+
+extension TestViewController : UITableViewDelegate{
+    
+    func setupRxDataSourcesForTestViewController() -> Void {
+        
+        dataSource.configureCell = {
+            _, tableView, indexPath, user in
+            let cell = tableView.dequeueReusableCell(withIdentifier: "testTableViewCell", for: indexPath) as! TestTableViewCell
+            cell.tag = indexPath.row
+            //cell.user = user
+            return cell
+        }
+
+
+        /*
+        //数组(0..<20)
+        let items = Observable.just((self.dataSource)
+            .map({ (model) -> Void in
+                printLog(message: "\(model.id)")
+            })
+        )
+            
+        items
+            .bindTo(self.tableView.rx.items(cellIdentifier: "testTableViewCell", cellType: TestTableViewCell.self)) {
+                (row,eletment,cell) in
+                cell.titleLabel.text = eletment + " --- \(row)"
+                //cell.cellForCoachModel(model: eletment)
+            }
+            .addDisposableTo(disposeBag)
+
+          */
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 60
+    }
+    
+}
+
+
+
+

@@ -1,0 +1,55 @@
+//
+//  CoachViewModel.swift
+//  SportsProduct
+//
+//  Created by apple on 17/1/17.
+//  Copyright © 2017年 xiangguohe. All rights reserved.
+//
+
+import UIKit
+import RxCocoa
+import RxSwift
+class CoachViewModel: NSObject {
+
+    override init() {
+        
+    }
+    
+    
+    //网络请求数据
+    func request(_ type : RequestType,urlstring : String,paramete : [String : AnyObject]) -> Observable <[CoachModel]> {
+        
+        return Observable.create({ (observe) -> Disposable in
+            
+            let dataTask : URLSessionDataTask = NetWorking.netWorking(type, urlString: urlstring, parameters: paramete, successNetWorkingBlock: { (resultObject) in
+                
+                var dataSource = [CoachModel]()//数据源
+                printLog(message: "搜索教练数据 --- \(resultObject)")
+                
+                if resultObject["resultFlg"]!.isEqual(to: "1"){
+                    let resultArray : Array = resultObject["resultData"] as! [AnyObject]
+                    for dataDic in resultArray{//初始化model
+                        let model = CoachModel.init(resultDic: dataDic as! [String : AnyObject])
+                        dataSource.append(model)
+                    }
+                }
+                
+                observe.onNext(dataSource)
+                observe.onCompleted()
+                
+            }, failueNetWorkingBlock: { (error) in
+                
+                printLog(message: error)
+            }) as! URLSessionDataTask
+            
+            return Disposables.create(with: {
+                dataTask.cancel()
+            })//释放资源
+            
+        })
+        
+    }
+    
+}
+
+

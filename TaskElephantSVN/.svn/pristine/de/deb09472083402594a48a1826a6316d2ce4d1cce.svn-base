@@ -1,0 +1,96 @@
+//
+//  SignupViewController.swift
+//  TaskElephant
+//
+//  Created by apple on 17/4/12.
+//  Copyright © 2017年 xiangguohe. All rights reserved.
+//
+
+import UIKit
+#if !RX_NO_MODULE
+    import RxSwift
+    import RxCocoa
+#endif
+class SignupViewController: UIViewController {
+    @IBOutlet var userNameTextField: UITextField!
+    @IBOutlet var userNameActivityLabel: UILabel!
+    
+    
+    @IBOutlet var passwordTextField: UITextField!
+    @IBOutlet var passWordActivityLabel: UILabel!
+    
+    
+    @IBOutlet var repeatPassWordTextField: UITextField!
+    @IBOutlet var repeatPassWordActivityLabel: UILabel!
+    
+    
+    @IBOutlet var signUpBtn: UIButton!
+    @IBOutlet var signUpActivityView: UIActivityIndicatorView!
+    
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Do any additional setup after loading the view.
+        
+        let viewModel = SignupViewModel.init(input: (
+                                               userName: userNameTextField.rx.text.orEmpty.asDriver(),
+                                               passWord: passwordTextField.rx.text.orEmpty.asDriver(),
+                                               repeatPassWord: repeatPassWordTextField.rx.text.orEmpty.asDriver(),
+                                               loginTaps: signUpBtn.rx.tap.asDriver()),
+                                             dependency:(
+                                               API:GitHubDefaultAPI.sharedAPI,
+                                               validationService:GitHubDefaultValidationService.sharedValidationService,
+                                               wireFrame :DefaultWireframe.sharedInstance
+ 
+            )
+        )
+        
+        //登录按钮用户交互
+        
+    
+        /*
+        let viewModel = SignupViewModel(
+            input: (
+                username: userNameTextField.rx.text.orEmpty.asDriver(),//用户名
+                password: passwordTextField.rx.text.orEmpty.asDriver(),//密码
+                repeatedPassword: repeatPassWordTextField.rx.text.orEmpty.asDriver(),//再次输入密码
+                loginTaps: signUpBtn.rx.tap.asDriver()//登录按钮
+            ),
+            dependency: (
+                API: GitHubDefaultAPI.sharedAPI,
+                validationService: GitHubDefaultValidationService.sharedValidationService,
+                wireframe: DefaultWireframe.sharedInstance
+            )
+        )
+        */
+        
+
+        
+        
+        
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+
+    /*
+    // MARK: - Navigation
+
+    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destinationViewController.
+        // Pass the selected object to the new view controller.
+    }
+    */
+
+}
+
+
+
+
+
+

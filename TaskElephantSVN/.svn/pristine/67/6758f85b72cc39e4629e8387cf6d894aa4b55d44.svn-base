@@ -1,0 +1,24 @@
+{
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+    "c6afdae1-c53a-4142-afe3-859b48b7c200++8282" : {
+
+    }
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "c6afdae1-c53a-4142-afe3-859b48b7c200++8282" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "958AB636-1A8F-4B95-9C27-940A217990D7",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "c6afdae1-c53a-4142-afe3-859b48b7c200++8282" : "TaskElephantSVN\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "TaskElephant",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "TaskElephant.xcworkspace",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/192.168.3.206\/svn\/ios_product",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "c6afdae1-c53a-4142-afe3-859b48b7c200++8282"
+    }
+  ]
+}
